@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const RefreshToken = require('../models/RefreshToken');
 
 const authMiddleware = (roles) => (req, res, next) => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
@@ -20,7 +21,12 @@ const authMiddleware = (roles) => (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expired, please refresh' });
+    }
+
+    res.status(401).json({ message: 'Invalid token' });
+    
   }
 };
 
